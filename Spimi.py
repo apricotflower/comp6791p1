@@ -9,27 +9,12 @@ terms_num = 0
 nonpositional_postings_num = 0
 
 
-def seperate_block():
-    block_document = {}
-    i = 0
+def spimi_invert(block_index):
+    articles = 0
+    block_number = 0
     len_size_leave = len(deal_all_document)
-    for (key, value) in deal_all_document.items():
-        block_document[key] = value
-        len_size_leave = len_size_leave - 1
-        i = i + 1
-        if i >= PARAMETER.BLOCK_SIZE or len_size_leave == 0:
-            i = 0
-            break
-    for key in block_document:
-        del deal_all_document[key]
-    return block_document
-
-
-def spimi_invert(block_document, block_number, block_index):
     block_dict = {}
-    fo = open(block_index + "BLOCK" + str(block_number) + ".txt", "a+")
-
-    for (key, value) in block_document.items():
+    for (key, value) in deal_all_document.items():
         # print("Search in article " + key)
         for term in value:
             if term not in block_dict:
@@ -38,16 +23,28 @@ def spimi_invert(block_document, block_number, block_index):
             else:
                 if key not in block_dict[term]:
                     block_dict[term].append(key)
+        articles = articles + 1
+        len_size_leave = len_size_leave - 1
 
-    print("Sorting……")
-    keys_list = sorted(block_dict.keys())
-    sorted_block_dict = OrderedDict()
-    for key in keys_list:
-        sorted_block_dict[key] = block_dict[key]
-
-    for (key, value) in sorted_block_dict.items():
-        fo.write(key + ":" + str(value) + "\n")
-    print("Generate BLOCK" + str(block_number) + " successfully!")
+        if articles >= PARAMETER.BLOCK_SIZE or len_size_leave == 0:
+            fo = open(block_index + "BLOCK" + str(block_number) + ".txt", "a+")
+            print("Sorting……")
+            keys_list = sorted(block_dict.keys())
+            sorted_block_dict = OrderedDict()
+            for key in keys_list:
+                sorted_block_dict[key] = block_dict[key]
+            i = 1
+            len_d = len(sorted_block_dict.items())
+            for (key, value) in sorted_block_dict.items():
+                if len_d == i:
+                    fo.write(key + ":" + str(value))
+                else:
+                    fo.write(key + ":" + str(value) + "\n")
+                i = i + 1
+            print("Generate BLOCK" + str(block_number) + " successfully!")
+            block_number = block_number + 1
+            block_dict = {}
+            articles = 0
 
 
 def merge_spimi(block_index,merge_block):
@@ -124,12 +121,6 @@ def start_spimi(block_index, merge_block):
     if not os.path.exists(merge_block):
         os.makedirs(merge_block)
 
-    i = 0
-    while len(deal_all_document) > 0:
-        block_document = seperate_block()
-        # print(len(block_dict))
-        spimi_invert(block_document, i, block_index)
-        i = i + 1
-
+    spimi_invert(block_index)
     merge_spimi(block_index,merge_block)
 
