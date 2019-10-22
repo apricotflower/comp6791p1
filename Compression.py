@@ -11,7 +11,8 @@ def compress_number():
     for tokens in compress_number_document.values():
         number_tokens = []
         for token in tokens:
-            if token.isdigit():
+            if any(char.isdigit() for char in token):
+            # if token.isdigit():
                 number_tokens.append(token)
         for n_tk in number_tokens:
             tokens.remove(n_tk)
