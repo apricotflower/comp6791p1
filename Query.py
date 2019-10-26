@@ -8,7 +8,11 @@ search_dict = dict()
 
 def single(query_list):
     print("Keyword: " + str(query_list))
-    print("Total result: " + str(search_dict[query_list[0]]))
+    try:
+        print("Total result: " + str(search_dict[query_list[0]]))
+    except:
+        print("Not such keyword in dictionary ! ")
+        start_query()
 
 
 def or_query_each(p1, p2):
@@ -49,7 +53,11 @@ def doc_id_sorted(query_list, result):
 
 def or_query(query_list):
     print("Keyword: " + str(query_list))
-    query_list.sort(key=lambda x: len(search_dict[x]))
+    try:
+        query_list.sort(key=lambda x: len(search_dict[x]))
+    except:
+        print("Not such keyword in dictionary ! ")
+        start_query()
     print("sorted: " + str(query_list))
     result = search_dict[query_list[0]]
     rest_list = query_list[1:]
@@ -81,7 +89,11 @@ def and_query_each(p1, p2):
 
 def and_query(query_list):
     print("Keyword: " + str(query_list))
-    query_list.sort(key=lambda x: len(search_dict[x]))
+    try:
+        query_list.sort(key=lambda x: len(search_dict[x]))
+    except:
+        print("Not such keyword in dictionary ! ")
+        start_query()
     print("sorted: " + str(query_list))
     result = search_dict[query_list[0]]
     rest_list = query_list[1:]
@@ -163,5 +175,6 @@ def start_query():
             print("Operator wrong! Input again!")
             query = input().lower().strip()
 
+    os._exit(0)
 
 load_dict()
