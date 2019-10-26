@@ -194,4 +194,5 @@ def start_query():
 
     os._exit(0)
 
-load_dict()
+if __name__ == '__main__':
+    load_dict()

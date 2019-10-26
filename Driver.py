@@ -2,7 +2,7 @@ import Spimi
 import Deal_File
 import Compression
 import PARAMETER
-# import Query
+import Query
 import datetime
 
 
@@ -27,9 +27,9 @@ if __name__ == '__main__':
     end = datetime.datetime.now()
     print("Run time: " + str(end - start))
 
-    # print("Preparing query function……: ")
-    # Query.load_dict()
-    # print("Finish")
+    print("Preparing query function……: ")
+    Query.load_dict()
+    print("Finish")
 
 
 
