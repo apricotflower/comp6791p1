@@ -2,17 +2,54 @@ import os
 import PARAMETER
 import ast
 from collections import OrderedDict
+import itertools
 
 search_dict = dict()
 
 
 def single(query_list):
-    print("Keyword: " + str(query_list))
+    # print("Keyword: " + str(query_list))
     try:
-        print("Total result: " + str(search_dict[query_list[0]]))
+        result = search_dict[query_list[0]]
     except KeyError:
         print("Not such keyword in dictionary ! ")
         start_query()
+    return result
+
+
+def check_and_query(query_list, result):
+    if len(result) == 0:
+        print("**"*20)
+        print("No result for this AND query, start to print results of smaller size in this query ……")
+        i = 1
+        shorter_lists = list(itertools.combinations(query_list, len(query_list) - i))
+        # print(shorter_lists)
+        while len(shorter_lists[0]) > 0:
+            results = []
+            for shorter_list in shorter_lists:
+                shorter_list = list(shorter_list)
+                result = multiple_query(shorter_list, PARAMETER.QUERY_AND)
+                results.append(result)
+                if len(result) != 0:
+                    print("Keyword: " + str(shorter_list))
+                    print("Result: " + str(result))
+                    print("**"*10)
+            i = i + 1
+            shorter_lists = list(itertools.combinations(query_list, len(query_list) - i))
+            # print(shorter_lists)
+
+
+def doc_id_sorted(query_list, result):
+    id_dict = {}
+    for id in result:
+        for term in query_list:
+            if id in search_dict[term]:
+                if id not in id_dict:
+                    id_dict[id] = 1
+                else:
+                    id_dict[id] = id_dict[id] + 1
+    sorted_id = sorted(id_dict.items(), key= lambda x:x[1],reverse=True)
+    print("Order: " + str(sorted_id))
 
 
 def or_query_each(p1, p2):
@@ -34,40 +71,8 @@ def or_query_each(p1, p2):
         answer = answer + p2[p2_pointer:]
     elif p2_pointer == len(p2):
         answer = answer + p1[p1_pointer:]
-    print("Result for " + str(p1) + " or " + str(p2) + " is " + str(answer))
+    # print("Result for " + str(p1) + " or " + str(p2) + " is " + str(answer))
     return answer
-
-
-def doc_id_sorted(query_list, result):
-    id_dict = {}
-    for id in result:
-        for term in query_list:
-            if id in search_dict[term]:
-                if id not in id_dict:
-                    id_dict[id] = 1
-                else:
-                    id_dict[id] = id_dict[id] + 1
-    sorted_id = sorted(id_dict.items(), key= lambda x:x[1],reverse=True)
-    print("Order: " + str(sorted_id))
-
-
-def or_query(query_list):
-    print("Keyword: " + str(query_list))
-    try:
-        query_list.sort(key=lambda x: len(search_dict[x]))
-    except KeyError:
-        print("Not such keyword in dictionary ! ")
-        start_query()
-    print("sorted: " + str(query_list))
-    result = search_dict[query_list[0]]
-    rest_list = query_list[1:]
-    print("rest list: " + str(rest_list))
-    while len(result) != 0 and len(rest_list) != 0:
-        result = or_query_each(result, search_dict[rest_list[0]])
-        rest_list = rest_list[1:]
-        print("rest list: " + str(rest_list))
-    print("Total result: " + str(result))
-    doc_id_sorted(query_list, result)
 
 
 def and_query_each(p1, p2):
@@ -83,26 +88,29 @@ def and_query_each(p1, p2):
             p1_pointer = p1_pointer + 1
         else:
             p2_pointer = p2_pointer + 1
-    print("Result for " + str(p1) + " and " + str(p2) + " is " + str(answer))
+    # print("Result for " + str(p1) + " and " + str(p2) + " is " + str(answer))
     return answer
 
 
-def and_query(query_list):
-    print("Keyword: " + str(query_list))
+def multiple_query(query_list, operator):
+    # print("Keyword: " + str(query_list))
     try:
         query_list.sort(key=lambda x: len(search_dict[x]))
     except KeyError:
         print("Not such keyword in dictionary ! ")
         start_query()
-    print("sorted: " + str(query_list))
+    # print("sorted: " + str(query_list))
     result = search_dict[query_list[0]]
     rest_list = query_list[1:]
-    print("rest list: " + str(rest_list))
+    # print("rest list: " + str(rest_list))
     while len(result) != 0 and len(rest_list) != 0:
-        result = and_query_each(result, search_dict[rest_list[0]])
+        if operator == PARAMETER.QUERY_AND:
+            result = and_query_each(result, search_dict[rest_list[0]])
+        elif operator == PARAMETER.QUERY_OR:
+            result = or_query_each(result, search_dict[rest_list[0]])
         rest_list = rest_list[1:]
-        print("rest list: " + str(rest_list))
-    print("Total result: " + str(result))
+        # print("rest list: " + str(rest_list))
+    return result
 
 
 def deal_with_query(query):
@@ -155,23 +163,32 @@ def load_dict():
 
 
 def start_query():
+    print("**"*40)
     print("Please input query: ")
     query = input().lower().strip()
     while query.lower() != PARAMETER.EXIT:
         query_list, operator = deal_with_query(query)
+        print("Start " + operator.upper() + " query")
+        print("Keyword: " + str(query_list))
         if operator == PARAMETER.QUERY_AND:
-            print(operator.lower() + " query")
-            and_query(query_list)
+            result = multiple_query(query_list,operator)
+            print("Total result: " + str(result))
+            check_and_query(query_list, result)
+            print("**" * 40)
             query = input().lower().strip()
         elif operator == PARAMETER.QUERY_OR:
-            print(operator.lower() + " query")
-            or_query(query_list)
+            result = multiple_query(query_list, operator)
+            print("Total result: " + str(result))
+            doc_id_sorted(query_list, result)
+            print("**" * 40)
             query = input().lower().strip()
         elif operator == PARAMETER.QUERY_SINGLE:
-            print(operator.lower() + " query")
-            single(query_list)
+            result = single(query_list)
+            print("Total result: " + str(result))
+            print("**" * 40)
             query = input().lower().strip()
         else:
+            print("**" * 40)
             print("Operator wrong! Input again!")
             query = input().lower().strip()
 
