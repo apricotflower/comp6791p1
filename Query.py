@@ -10,7 +10,7 @@ def single(query_list):
     print("Keyword: " + str(query_list))
     try:
         print("Total result: " + str(search_dict[query_list[0]]))
-    except:
+    except KeyError:
         print("Not such keyword in dictionary ! ")
         start_query()
 
@@ -55,7 +55,7 @@ def or_query(query_list):
     print("Keyword: " + str(query_list))
     try:
         query_list.sort(key=lambda x: len(search_dict[x]))
-    except:
+    except KeyError:
         print("Not such keyword in dictionary ! ")
         start_query()
     print("sorted: " + str(query_list))
@@ -91,7 +91,7 @@ def and_query(query_list):
     print("Keyword: " + str(query_list))
     try:
         query_list.sort(key=lambda x: len(search_dict[x]))
-    except:
+    except KeyError:
         print("Not such keyword in dictionary ! ")
         start_query()
     print("sorted: " + str(query_list))
