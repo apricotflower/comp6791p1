@@ -28,20 +28,20 @@ def spimi_invert(block_index):
 
         if articles >= PARAMETER.BLOCK_SIZE or len_size_leave == 0:
             fo = open(block_index + "BLOCK" + str(block_number) + ".txt", "a+")
-            print("Sorting……")
+            # print("Sorting……")
             keys_list = sorted(block_dict.keys())
             sorted_block_dict = OrderedDict()
-            for key in keys_list:
-                sorted_block_dict[key] = block_dict[key]
+            for key_1 in keys_list:
+                sorted_block_dict[key_1] = block_dict[key_1]
             i = 1
             len_d = len(sorted_block_dict.items())
-            for (key, value) in sorted_block_dict.items():
+            for (key_2, value_2) in sorted_block_dict.items():
                 if len_d == i:
-                    fo.write(key + ":" + str(value))
+                    fo.write(key_2 + ":" + str(value_2))
                 else:
-                    fo.write(key + ":" + str(value) + "\n")
+                    fo.write(key_2 + ":" + str(value_2) + "\n")
                 i = i + 1
-            print("Generate BLOCK" + str(block_number) + " successfully!")
+            print("Generate " + block_index +"BLOCK" + str(block_number) + " successfully!")
             block_number = block_number + 1
             block_dict = {}
             articles = 0

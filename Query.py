@@ -7,20 +7,10 @@ import itertools
 search_dict = dict()
 
 
-def single(query_list):
-    # print("Keyword: " + str(query_list))
-    try:
-        result = search_dict[query_list[0]]
-    except KeyError:
-        print("Not such keyword in dictionary ! ")
-        start_query()
-    return result
-
-
 def check_and_query(query_list, result):
     if len(result) == 0:
-        print("**"*20)
-        print("No result for this AND query, start to print results of smaller size in this query ……")
+        print("No result for this AND query: " + str(query_list) + ", start printing results of smaller size terms in this query ……")
+        print("**" * 20)
         i = 1
         shorter_lists = list(itertools.combinations(query_list, len(query_list) - i))
         # print(shorter_lists)
@@ -32,7 +22,7 @@ def check_and_query(query_list, result):
                 results.append(result)
                 if len(result) != 0:
                     print("Keyword: " + str(shorter_list))
-                    print("Result: " + str(result))
+                    print(str(len(result)) + " documents was found." + "Result: " + str(result))
                     print("**"*10)
             i = i + 1
             shorter_lists = list(itertools.combinations(query_list, len(query_list) - i))
@@ -92,14 +82,30 @@ def and_query_each(p1, p2):
     return answer
 
 
+def check_exist(query_list):
+    exist_list = []
+    every_term_exist = True
+    for term in query_list:
+        posting = search_dict.get(term, None)
+        if posting is None:
+            print("[ " + str(term) + " ] does not exist in the dictionary! ")
+            every_term_exist = False
+        else:
+            exist_list.append(term)
+
+    if not exist_list:
+        print(str(len(exist_list)) + " result exist! input again ……")
+        return start_query()
+    if not every_term_exist:
+        print("Only found " + str(exist_list) + " in the dictionary. \n" + "Start querying result with these " + str(len(exist_list)) + " terms ……" )
+        print("**"*30)
+        print("Keyword: " + str(exist_list))
+    return exist_list
+
+
 def multiple_query(query_list, operator):
     # print("Keyword: " + str(query_list))
-    try:
-        query_list.sort(key=lambda x: len(search_dict[x]))
-    except KeyError:
-        print("Not such keyword in dictionary ! ")
-        start_query()
-    # print("sorted: " + str(query_list))
+    query_list.sort(key=lambda x: len(search_dict[x]))
     result = search_dict[query_list[0]]
     rest_list = query_list[1:]
     # print("rest list: " + str(rest_list))
@@ -119,7 +125,6 @@ def deal_with_query(query):
     query_list_and = []
     operator = ""
     query_raw = query.split(" ")
-    print(query_raw)
     if len(query_raw) == 1:
         query_list = query_raw
         operator = PARAMETER.QUERY_SINGLE
@@ -143,7 +148,6 @@ def deal_with_query(query):
 
 def load_dict():
     print("Loading ……")
-    # dict_test = open("dict.txt","a+")
     search_index = PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH
     global search_dict
     search_dict = OrderedDict()
@@ -154,10 +158,7 @@ def load_dict():
         while line:
             term, posting = line.rsplit(":", 1)
             search_dict[term] = ast.literal_eval(posting)
-            # print(term)
-            # dict_test.write(term+"\n")
             line = fo.readline()
-    # print(search_dict)
     print("Finish loading ! ")
     start_query()
 
@@ -170,21 +171,22 @@ def start_query():
         query_list, operator = deal_with_query(query)
         print("Start " + operator.upper() + " query")
         print("Keyword: " + str(query_list))
+        query_list = check_exist(query_list)
         if operator == PARAMETER.QUERY_AND:
-            result = multiple_query(query_list,operator)
-            print("Total result: " + str(result))
+            result = multiple_query(query_list, operator)
+            print(str(len(result)) + " documents was found." + " Total result: " + str(result))
             check_and_query(query_list, result)
             print("**" * 40)
             query = input().lower().strip()
         elif operator == PARAMETER.QUERY_OR:
             result = multiple_query(query_list, operator)
-            print("Total result: " + str(result))
+            print(str(len(result)) + " documents was found." + "Total result: " + str(result))
             doc_id_sorted(query_list, result)
             print("**" * 40)
             query = input().lower().strip()
         elif operator == PARAMETER.QUERY_SINGLE:
-            result = single(query_list)
-            print("Total result: " + str(result))
+            result = multiple_query(query_list, operator)
+            print(str(len(result)) + " documents was found." + "Total result: " + str(result))
             print("**" * 40)
             query = input().lower().strip()
         else:
@@ -193,6 +195,7 @@ def start_query():
             query = input().lower().strip()
 
     os._exit(0)
+
 
 if __name__ == '__main__':
     load_dict()
