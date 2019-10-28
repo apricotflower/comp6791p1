@@ -1,7 +1,7 @@
 
 BLOCK_SIZE = 500
 FINAL_TERMS_SIZE = 25000
-PATH = "C:/Users/liang/zhong/new/2019FALL/6791/Lab1/reuters21578/reut2-0"
+PATH = "reuters21578/reut2-0"
 
 INDEX = "INDEXS/"
 
