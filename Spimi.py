@@ -4,12 +4,13 @@ from collections import OrderedDict
 import os
 import ast
 import copy
-
+# for counting the compression table
 terms_num = 0
 nonpositional_postings_num = 0
 
 
 def spimi_invert(block_index):
+    """ Generate the inverted index by SPIMI algorithm """
     articles = 0
     block_number = 0
     len_size_leave = len(deal_all_document)
@@ -46,6 +47,7 @@ def spimi_invert(block_index):
 
 
 def merge_spimi(block_index,merge_block):
+    """ Merge the inverted index. """
     print("Start merging ……")
     final_i = 0
     fo = open(merge_block + "II"+ str(final_i) + ".txt", "a+")

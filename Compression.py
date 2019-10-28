@@ -6,6 +6,7 @@ import prettytable
 
 
 def compress_number():
+    """ filter number """
     no_number_tokens_sum = 0
     compress_number_document = Deal_File.all_document
     for tokens in compress_number_document.values():
@@ -20,12 +21,14 @@ def compress_number():
 
 
 def case_folding():
+    """ do case folding """
     case_folding_document = Deal_File.all_document
     for (newid,tokens) in case_folding_document.items():
         case_folding_document[newid] = [token.lower() for token in tokens]
 
 
 def stop_words(stops_words):
+    """ filter 30 stop words and 150 stop words """
     no_stop_words_sum = 0
     no_stop_words_document = Deal_File.all_document
     for tokens in no_stop_words_document.values():

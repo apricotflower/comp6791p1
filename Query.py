@@ -8,6 +8,7 @@ search_dict = dict()
 
 
 def check_and_query(query_list, result):
+    """  Check the result from and query. If the result is empty, query the combinations of the terms. """
     if len(result) == 0:
         print("No result for this AND query: " + str(query_list) + ", start printing results of smaller size terms in this query ……")
         print("**" * 20)
@@ -30,6 +31,7 @@ def check_and_query(query_list, result):
 
 
 def doc_id_sorted(query_list, result):
+    """  In or query, sort the document according to the number of keywords. """
     id_dict = {}
     for id in result:
         for term in query_list:
@@ -43,6 +45,7 @@ def doc_id_sorted(query_list, result):
 
 
 def or_query_each(p1, p2):
+    """  or operation of two terms """
     answer = []
     p1_pointer = 0
     p2_pointer = 0
@@ -65,6 +68,7 @@ def or_query_each(p1, p2):
 
 
 def and_query_each(p1, p2):
+    """ and operation of two terms """
     answer = []
     p1_pointer = 0
     p2_pointer = 0
@@ -81,6 +85,7 @@ def and_query_each(p1, p2):
 
 
 def check_exist(query_list):
+    """ Check if every terms is existed in the dictionary. """
     exist_list = []
     every_term_exist = True
     for term in query_list:
@@ -115,6 +120,7 @@ def multiple_query(query_list, operator):
 
 
 def deal_with_query(query):
+    """  Decide the terms and operator in the query. """
     query_list = []
     query_list_or = []
     query_list_and = []
@@ -142,6 +148,7 @@ def deal_with_query(query):
 
 
 def load_dict():
+    """ Loading the index file into global variable """
     print("Loading ……")
     search_index = PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH
     global search_dict

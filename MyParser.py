@@ -2,6 +2,7 @@ from html.parser import HTMLParser
 
 
 class MyParser(HTMLParser):
+    """  catch title and body from the raw corpus """
     newid = ""
     text = False
     content = ""

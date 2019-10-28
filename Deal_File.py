@@ -23,6 +23,7 @@ def allfiles_break_clean():
 
 
 def tokenize():
+    """ Tokenize the content. """
     global tokens_num
     for (key, value) in all_document.items():
         # Deal with punctuation
