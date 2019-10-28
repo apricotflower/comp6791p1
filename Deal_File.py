@@ -25,16 +25,10 @@ def allfiles_break_clean():
 def tokenize():
     global tokens_num
     for (key, value) in all_document.items():
-        #处理标点
+        # Deal with punctuation
         value = value.translate(str.maketrans(string.punctuation, " " * len(string.punctuation)))
         tokens = nltk.word_tokenize(value)
-
-        # translator = str.maketrans(dict.fromkeys(string.punctuation))
-        # tokens = nltk.word_tokenize(str(value.translate(translator)))
-
         all_document[key] = tokens
-        # print(len(tokens))
         tokens_num = tokens_num + len(tokens)
-        # print("Tokenizing " + key)
-        # print(all_dict[key])
+
 
