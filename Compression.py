@@ -12,7 +12,6 @@ def compress_number():
         number_tokens = []
         for token in tokens:
             if any(char.isdigit() for char in token):
-            # if token.isdigit():
                 number_tokens.append(token)
         for n_tk in number_tokens:
             tokens.remove(n_tk)
@@ -41,43 +40,32 @@ def stop_words(stops_words):
 
 
 def start_compress():
-    # document = copy.deepcopy(Deal_File.all_document)
-    # print("docu3:" + str(len(Deal_File.all_document)))
     print("**" * 20)
     print("unfiltered")
-    # print("(distinct) terms: " + str(Spimi.terms_num))
     unfiltered_terms = Spimi.terms_num
     Spimi.terms_num = 0
-    # print("nonpositional postings: " + str(Spimi.nonpositional_postings_num))
     unfiltered_nonpositional_postings = Spimi.nonpositional_postings_num
     Spimi.nonpositional_postings_num = 0
-    # print("token: " + str(Deal_File.tokens_num))
     unfiltered_tokens = Deal_File.tokens_num
 
     print("**" * 20)
     print("Start no numbers ")
     no_number_tokens_sum = compress_number()
     Spimi.start_spimi(PARAMETER.NO_NUMBER_BLOCK_PATH, PARAMETER.NO_NUMBER_MERGE_BLOCK_PATH)
-    # print("(distinct) terms: " + str(Spimi.terms_num))
     no_numbers_terms = Spimi.terms_num
     Spimi.terms_num = 0
-    # print("nonpositional postings: " + str(Spimi.nonpositional_postings_num))
     no_numbers_nonpositional_postings = Spimi.nonpositional_postings_num
     Spimi.nonpositional_postings_num = 0
-    # print("token: " + no_number_tokens_sum)
     no_numbers_tokens = no_number_tokens_sum
 
     print("**" * 20)
     print("Start case folding")
     case_folding()
     Spimi.start_spimi(PARAMETER.CASE_FOLDING_BLOCK_PATH, PARAMETER.CASE_FOLDING_MERGE_BLOCK_PATH)
-    # print("(distinct) terms: " + str(Spimi.terms_num))
     case_folding_terms = Spimi.terms_num
     Spimi.terms_num = 0
-    # print("nonpositional postings: " + str(Spimi.nonpositional_postings_num))
     case_folding_nonpositional_postings = Spimi.nonpositional_postings_num
     Spimi.nonpositional_postings_num = 0
-    # print("token: " + no_number_tokens_sum)
     case_folding_tokens = no_number_tokens_sum
 
     stops = stopwords.words("english")
@@ -86,10 +74,8 @@ def start_compress():
     stops_30 = stops[:30]
     no_stop_words_30_sum = stop_words(stops_30)
     Spimi.start_spimi(PARAMETER.STOP_WORDS_30_BLOCK_PATH, PARAMETER.STOP_WORDS_30_MERGE_BLOCK_PATH)
-    # print("(distinct) terms: " + str(Spimi.terms_num))
     stop_words_30_terms = Spimi.terms_num
     Spimi.terms_num = 0
-    # print("nonpositional postings: " + str(Spimi.nonpositional_postings_num))
     stop_words_30_nonpositional_postings = Spimi.nonpositional_postings_num
     Spimi.nonpositional_postings_num = 0
     # print("token: " + no_stop_words_30_sum)
@@ -100,13 +86,10 @@ def start_compress():
     stops_150 = stops[:150]
     no_stop_words_150_sum = stop_words(stops_150)
     Spimi.start_spimi(PARAMETER.STOP_WORDS_150_BLOCK_PATH, PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH)
-    # print("(distinct) terms: " + str(Spimi.terms_num))
     stop_words_150_terms = Spimi.terms_num
     Spimi.terms_num = 0
-    # print("nonpositional postings: " + str(Spimi.nonpositional_postings_num))
     stop_words_150_nonpositional_postings = Spimi.nonpositional_postings_num
     Spimi.nonpositional_postings_num = 0
-    # print("token: " + no_stop_words_150_sum)
     stop_words_150_tokens = no_stop_words_150_sum
 
     print("Drawing Table ……")

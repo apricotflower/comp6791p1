@@ -61,7 +61,6 @@ def or_query_each(p1, p2):
         answer = answer + p2[p2_pointer:]
     elif p2_pointer == len(p2):
         answer = answer + p1[p1_pointer:]
-    # print("Result for " + str(p1) + " or " + str(p2) + " is " + str(answer))
     return answer
 
 
@@ -78,7 +77,6 @@ def and_query_each(p1, p2):
             p1_pointer = p1_pointer + 1
         else:
             p2_pointer = p2_pointer + 1
-    # print("Result for " + str(p1) + " and " + str(p2) + " is " + str(answer))
     return answer
 
 
@@ -104,18 +102,15 @@ def check_exist(query_list):
 
 
 def multiple_query(query_list, operator):
-    # print("Keyword: " + str(query_list))
     query_list.sort(key=lambda x: len(search_dict[x]))
     result = search_dict[query_list[0]]
     rest_list = query_list[1:]
-    # print("rest list: " + str(rest_list))
     while len(result) != 0 and len(rest_list) != 0:
         if operator == PARAMETER.QUERY_AND:
             result = and_query_each(result, search_dict[rest_list[0]])
         elif operator == PARAMETER.QUERY_OR:
             result = or_query_each(result, search_dict[rest_list[0]])
         rest_list = rest_list[1:]
-        # print("rest list: " + str(rest_list))
     return result
 
 
@@ -160,7 +155,6 @@ def load_dict():
         os._exit(0)
 
     for file in os.listdir(search_index):
-        # print(file)
         fo = open(search_index + file)
         line = fo.readline()
         while line:
@@ -176,31 +170,25 @@ def start_query():
     print("Please input query: ")
     query = input().lower().strip()
     while query.lower() != PARAMETER.EXIT:
-        query_list, operator = deal_with_query(query)
+        try:
+            query_list, operator = deal_with_query(query)
+        except IndexError:
+            print("Wrong query format! Input again!")
+            start_query()
         print("Start " + operator.upper() + " query")
         print("Keyword: " + str(query_list))
         query_list = check_exist(query_list)
-        if operator == PARAMETER.QUERY_AND:
+        if operator == PARAMETER.QUERY_AND or operator == PARAMETER.QUERY_OR or operator == PARAMETER.QUERY_SINGLE:
             result = multiple_query(query_list, operator)
-            print(str(len(result)) + " documents was found." + " Total result: " + str(result))
-            check_and_query(query_list, result)
-            print("**" * 40)
-            query = input().lower().strip()
-        elif operator == PARAMETER.QUERY_OR:
-            result = multiple_query(query_list, operator)
-            print(str(len(result)) + " documents was found." + "Total result: " + str(result))
-            doc_id_sorted(query_list, result)
-            print("**" * 40)
-            query = input().lower().strip()
-        elif operator == PARAMETER.QUERY_SINGLE:
-            result = multiple_query(query_list, operator)
-            print(str(len(result)) + " documents was found." + "Total result: " + str(result))
-            print("**" * 40)
-            query = input().lower().strip()
+            print(str(len(result)) + " documents were found." + "Total result: " + str(result))
+            if operator == PARAMETER.QUERY_AND:
+                check_and_query(query_list, result)
+            elif operator == PARAMETER.QUERY_OR:
+                doc_id_sorted(query_list, result)
         else:
-            print("**" * 40)
             print("Operator wrong! Input again!")
-            query = input().lower().strip()
+        print("**" * 40)
+        query = input().lower().strip()
 
     os._exit(0)
 

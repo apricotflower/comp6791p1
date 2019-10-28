@@ -15,7 +15,6 @@ def spimi_invert(block_index):
     len_size_leave = len(deal_all_document)
     block_dict = {}
     for (key, value) in deal_all_document.items():
-        # print("Search in article " + key)
         for term in value:
             if term not in block_dict:
                 index_list = [key]
@@ -28,7 +27,6 @@ def spimi_invert(block_index):
 
         if articles >= PARAMETER.BLOCK_SIZE or len_size_leave == 0:
             fo = open(block_index + "BLOCK" + str(block_number) + ".txt", "a+")
-            # print("Sorting……")
             keys_list = sorted(block_dict.keys())
             sorted_block_dict = OrderedDict()
             for key_1 in keys_list:
@@ -56,7 +54,6 @@ def merge_spimi(block_index,merge_block):
     buffer = OrderedDict()
 
     for file in os.listdir(block_index):
-        # print(type(file))
         blocks[block_index + file] = open(block_index + file)
 
     remain_block_number = len(blocks)
@@ -65,17 +62,11 @@ def merge_spimi(block_index,merge_block):
         first_line = block.readline()
         term, posting = first_line.rsplit(":", 1)
         buffer[block.name] = [term, ast.literal_eval(posting)]
-       #  buffer[block.name] = [term, posting]
-        # print(type(buffer[block.name]))
-        # print(block.name + " : " + str(buffer[block.name]))
 
     while remain_block_number > 0:
         lowest_terms = buffer[min(buffer, key=lambda a: buffer[a][0])][0]
-        # print(type(lowest_terms))
-        # print(str(lowest_terms))
         lowest_block_names = []
         write_down_posting = []
-        # write_down_posting = ""
         write_down_line = lowest_terms + ":"
         for (block_name, all_line) in buffer.items():
             if all_line[0] == lowest_terms:
@@ -83,7 +74,6 @@ def merge_spimi(block_index,merge_block):
                 write_down_posting = write_down_posting + all_line[1]
         write_down_posting = list(map(int, write_down_posting))
         write_down_posting.sort()
-        # print(write_down_line + str(write_down_posting))
 
         if final_file_line == PARAMETER.FINAL_TERMS_SIZE - 1:
             fo.write(write_down_line + str(write_down_posting))
@@ -104,7 +94,6 @@ def merge_spimi(block_index,merge_block):
             if line:
                 term, posting = line.rsplit(":", 1)
                 buffer[lowest_block_name] = [term, ast.literal_eval(posting)]
-                # buffer[lowest_block_name] = [term, posting]
             else:
                 del buffer[lowest_block_name]
                 print(lowest_block_name + " merge finish!")
