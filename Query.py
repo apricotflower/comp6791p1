@@ -3,6 +3,10 @@ import PARAMETER
 import ast
 from collections import OrderedDict
 import itertools
+import re
+import Deal_File
+import math
+import json
 
 search_dict = dict()
 
@@ -119,6 +123,63 @@ def multiple_query(query_list, operator):
     return result
 
 
+def compute_RSVd(document, query_list, n, l_avc):
+    # print(Deal_File.all_document)
+    # print("document: " + str(document))
+    # print("query_list: " + str(query_list))
+    # print("n: " + str(n))
+    # print("l_avc: " + str(l_avc))
+    k1 = 1.2 #1.2
+    b = 0.75 #0 to 1
+    l_d = len(tokens_document[document])
+    # print("l_d: " + str(l_d))
+    temp = 0
+    for t in query_list:
+        tftd = 0
+        dft = len(search_dict[t])
+        # print("dft: "+str(dft))
+        for token in tokens_document[document]:
+            if t == token:
+                tftd = tftd + 1
+        # print("t: " + str(t))
+        # print("tftd: "+str(tftd))
+        # print(n/dft)
+        # print(k1*((1-b)+b*(l_d/l_avc))+tftd)
+        temp = temp+((math.log((n/dft), 10))*(((k1+1)*tftd)/(k1*((1-b)+b*(l_d/l_avc))+tftd)))
+    RSVd = temp
+    # print("document " + str(document) + " RSVd is " + str(RSVd))
+    return RSVd
+
+
+def compute_l_avc(n):
+    sum = 0
+    for document in tokens_document.values():
+        sum = sum + len(document)
+    return sum/n
+
+
+def bm25_query(query_list):
+    global tokens_document
+    if len(Deal_File.all_document) != 0:
+        print("t")
+        tokens_document = Deal_File.all_document
+    elif os.path.isfile("tokens.json"):
+        print("r")
+        fo = open("tokens.json", 'r')
+        tokens_document = json.load(fo)
+    else:
+        print("No tokens record! Creat it first!")
+        os._exit(0)
+    n = len(tokens_document)
+    l_avc = compute_l_avc(n)
+    documents = multiple_query(query_list, PARAMETER.QUERY_OR)
+    documents_RSVd = {}
+    for document in documents:
+        documents_RSVd[document] = compute_RSVd(str(document), query_list, n, l_avc)
+    sorted_RSVd = sorted(documents_RSVd.items(), key=lambda x: x[1], reverse=True)
+    print(sorted_RSVd)
+
+
 def deal_with_query(query):
     """  Decide the terms and operator in the query. """
     query_list = []
@@ -129,6 +190,9 @@ def deal_with_query(query):
     if len(query_raw) == 1:
         query_list = query_raw
         operator = PARAMETER.QUERY_SINGLE
+    elif query_raw[0] == PARAMETER.QUERY_BM25:
+        query_list = query_raw[1:]
+        operator = PARAMETER.QUERY_BM25
     else:
         if query_raw[1] == PARAMETER.QUERY_OR:
             query_list_or.append(query_raw[0])
@@ -144,15 +208,40 @@ def deal_with_query(query):
                     query_list_and.append(query_raw[i + 1])
             operator = PARAMETER.QUERY_AND
             query_list = query_list_and
+    query_list = [re.sub(r'[\W\s]', '', token) for token in query_list]
     return query_list, operator
 
 
-def load_dict():
-    """ Loading the index file into global variable """
-    print("Loading ……")
+# def load_dict():
+#     """ Loading the index file into global variable """
+#     print("Loading ……")
+#     search_index = PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH
+#     global search_dict
+#     search_dict = OrderedDict()
+#     try:
+#         if not os.listdir(search_index):
+#             print("The index for dictionary is empty, please generate it first! ")
+#             os._exit(0)
+#     except FileNotFoundError:
+#         print("The index for dictionary is empty, please generate it first! ")
+#         os._exit(0)
+#
+#     for file in os.listdir(search_index):
+#         fo = open(search_index + file)
+#         line = fo.readline()
+#         while line:
+#             term, posting = line.rsplit(":", 1)
+#             search_dict[term] = ast.literal_eval(posting)
+#             line = fo.readline()
+#     print("Finish loading ! ")
+#     start_query()
+
+
+def get_search_dict(query_list):
+    print("Getting ……")
     search_index = PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH
     global search_dict
-    search_dict = OrderedDict()
+    search_dict = {}
     try:
         if not os.listdir(search_index):
             print("The index for dictionary is empty, please generate it first! ")
@@ -160,16 +249,20 @@ def load_dict():
     except FileNotFoundError:
         print("The index for dictionary is empty, please generate it first! ")
         os._exit(0)
-
-    for file in os.listdir(search_index):
-        fo = open(search_index + file)
-        line = fo.readline()
-        while line:
-            term, posting = line.rsplit(":", 1)
-            search_dict[term] = ast.literal_eval(posting)
+    for term in query_list:
+        for file in os.listdir(search_index):
+            fo = open(search_index + file)
             line = fo.readline()
-    print("Finish loading ! ")
-    start_query()
+            has_term = False
+            while line:
+                line_term, posting = line.rsplit(":", 1)
+                if line_term == term:
+                    search_dict[term] = ast.literal_eval(posting)
+                    has_term = True
+                    break
+                line = fo.readline()
+            if has_term:
+                break
 
 
 def start_query():
@@ -179,6 +272,7 @@ def start_query():
     while query.lower() != PARAMETER.EXIT:
         try:
             query_list, operator = deal_with_query(query)
+            get_search_dict(query_list)
         except IndexError:
             print("Wrong query format! Input again!")
             start_query()
@@ -192,6 +286,8 @@ def start_query():
                 check_and_query(query_list, result)
             elif operator == PARAMETER.QUERY_OR:
                 doc_id_sorted(query_list, result)
+        elif operator == PARAMETER.QUERY_BM25:
+            bm25_query(query_list)
         else:
             print("Operator wrong! Input again!")
         print("**" * 40)
@@ -201,4 +297,4 @@ def start_query():
 
 
 if __name__ == '__main__':
-    load_dict()
+    start_query()

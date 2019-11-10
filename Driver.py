@@ -28,7 +28,7 @@ if __name__ == '__main__':
     print("Run time: " + str(end - start))
 
     print("Preparing query function……: ")
-    Query.load_dict()
+    Query.start_query()
     print("Finish")
 
 

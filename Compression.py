@@ -3,20 +3,31 @@ import PARAMETER
 import Deal_File
 from nltk.corpus import stopwords
 import prettytable
+import re
+import json
 
 
 def compress_number():
     """ filter number """
     no_number_tokens_sum = 0
     compress_number_document = Deal_File.all_document
-    for tokens in compress_number_document.values():
-        number_tokens = []
+    for key, tokens in compress_number_document.items():
+        tokens = [re.sub(r'[\d+]', '', token) for token in tokens]
+        empty_spaces = []
         for token in tokens:
-            if any(char.isdigit() for char in token):
-                number_tokens.append(token)
-        for n_tk in number_tokens:
-            tokens.remove(n_tk)
+            if token == "":
+                empty_spaces.append(token)
+        for e in empty_spaces:
+            tokens.remove(e)
+        compress_number_document[key] = tokens
+        # number_tokens = []
+        # for token in tokens:
+        #     if any(char.isdigit() for char in token):
+        #         number_tokens.append(token)
+        # for n_tk in number_tokens:
+        #     tokens.remove(n_tk)
         no_number_tokens_sum = no_number_tokens_sum + len(tokens)
+
     return no_number_tokens_sum
 
 
@@ -94,6 +105,9 @@ def start_compress():
     stop_words_150_nonpositional_postings = Spimi.nonpositional_postings_num
     Spimi.nonpositional_postings_num = 0
     stop_words_150_tokens = no_stop_words_150_sum
+
+    fo = open('tokens.json', 'w')
+    json.dump(Deal_File.all_document, fo)
 
     print("Drawing Table ……")
     table = prettytable.PrettyTable()
