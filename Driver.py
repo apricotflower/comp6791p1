@@ -27,9 +27,9 @@ if __name__ == '__main__':
     end = datetime.datetime.now()
     print("Run time: " + str(end - start))
 
-    print("Preparing query function……: ")
-    Query.start_query()
-    print("Finish")
+    # print("Preparing query function……: ")
+    # Query.start_query()
+    # print("Finish")
 
 
 

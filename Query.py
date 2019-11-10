@@ -7,6 +7,7 @@ import re
 import Deal_File
 import math
 import json
+import copy
 
 search_dict = dict()
 
@@ -27,6 +28,8 @@ def check_and_query(query_list, result):
                 results.append(result)
                 if len(result) != 0:
                     print("Keyword: " + str(shorter_list))
+                    for (i1,v) in enumerate(result):
+                        result[i1] = v[0]
                     print(str(len(result)) + " documents was found." + "Result: " + str(result))
                     print("**"*10)
             i = i + 1
@@ -39,11 +42,12 @@ def doc_id_sorted(query_list, result):
     id_dict = {}
     for id in result:
         for term in query_list:
-            if id in search_dict[term]:
-                if id not in id_dict:
-                    id_dict[id] = 1
-                else:
-                    id_dict[id] = id_dict[id] + 1
+            for list in search_dict[term]:
+                if list[0] == id :
+                    if id not in id_dict:
+                        id_dict[id] = 1
+                    else:
+                        id_dict[id] = id_dict[id] + 1
     sorted_id = sorted(id_dict.items(), key= lambda x:x[1],reverse=True)
     print("Order: " + str(sorted_id))
 
@@ -53,12 +57,13 @@ def or_query_each(p1, p2):
     answer = []
     p1_pointer = 0
     p2_pointer = 0
+
     while len(p1) > p1_pointer and len(p2) > p2_pointer:
-        if p1[p1_pointer] == p2[p2_pointer]:
+        if p1[p1_pointer][0] == p2[p2_pointer][0]:
             answer.append(p1[p1_pointer])
             p1_pointer = p1_pointer + 1
             p2_pointer = p2_pointer + 1
-        elif p1[p1_pointer] < p2[p2_pointer]:
+        elif p1[p1_pointer][0] < p2[p2_pointer][0]:
             answer.append(p1[p1_pointer])
             p1_pointer = p1_pointer + 1
         else:
@@ -68,6 +73,8 @@ def or_query_each(p1, p2):
         answer = answer + p2[p2_pointer:]
     elif p2_pointer == len(p2):
         answer = answer + p1[p1_pointer:]
+    # for (i,v) in enumerate(answer):
+    #     answer[i] = v[0]
     return answer
 
 
@@ -77,11 +84,11 @@ def and_query_each(p1, p2):
     p1_pointer = 0
     p2_pointer = 0
     while len(p1) > p1_pointer and len(p2) > p2_pointer:
-        if p1[p1_pointer] == p2[p2_pointer]:
+        if p1[p1_pointer][0] == p2[p2_pointer][0]:
             answer.append(p1[p1_pointer])
             p1_pointer = p1_pointer + 1
             p2_pointer = p2_pointer + 1
-        elif  p1[p1_pointer] < p2[p2_pointer]:
+        elif  p1[p1_pointer][0] < p2[p2_pointer][0]:
             p1_pointer = p1_pointer + 1
         else:
             p2_pointer = p2_pointer + 1
@@ -123,28 +130,19 @@ def multiple_query(query_list, operator):
     return result
 
 
-def compute_RSVd(document, query_list, n, l_avc):
-    # print(Deal_File.all_document)
-    # print("document: " + str(document))
-    # print("query_list: " + str(query_list))
-    # print("n: " + str(n))
-    # print("l_avc: " + str(l_avc))
-    k1 = 1.2 #1.2
-    b = 0.75 #0 to 1
-    l_d = len(tokens_document[document])
-    # print("l_d: " + str(l_d))
+def compute_RSVd(document, query_list,k1,b):
+    l_d = int(tokens_number[document])
     temp = 0
     for t in query_list:
         tftd = 0
+        for newid_pair in search_dict[t]:
+            # print(newid_pair[0])
+            # print(document)
+            if str(newid_pair[0]) == str(document):
+                # print("in")
+                tftd = newid_pair[1]
         dft = len(search_dict[t])
-        # print("dft: "+str(dft))
-        for token in tokens_document[document]:
-            if t == token:
-                tftd = tftd + 1
-        # print("t: " + str(t))
-        # print("tftd: "+str(tftd))
-        # print(n/dft)
-        # print(k1*((1-b)+b*(l_d/l_avc))+tftd)
+
         temp = temp+((math.log((n/dft), 10))*(((k1+1)*tftd)/(k1*((1-b)+b*(l_d/l_avc))+tftd)))
     RSVd = temp
     # print("document " + str(document) + " RSVd is " + str(RSVd))
@@ -153,30 +151,28 @@ def compute_RSVd(document, query_list, n, l_avc):
 
 def compute_l_avc(n):
     sum = 0
-    for document in tokens_document.values():
-        sum = sum + len(document)
+    for token_number in tokens_number.values():
+        sum = sum + int(token_number)
     return sum/n
 
 
 def bm25_query(query_list):
-    global tokens_document
-    if len(Deal_File.all_document) != 0:
-        print("t")
-        tokens_document = Deal_File.all_document
-    elif os.path.isfile("tokens.json"):
-        print("r")
-        fo = open("tokens.json", 'r')
-        tokens_document = json.load(fo)
-    else:
-        print("No tokens record! Creat it first!")
-        os._exit(0)
-    n = len(tokens_document)
-    l_avc = compute_l_avc(n)
+    # k1 = 1.2 #1.2
+    # b = 0.75 #0 to 1
+    print("Input k1: ")
+    k1=float(input())
+    print("Input b: ")
+    b =float(input())
+
     documents = multiple_query(query_list, PARAMETER.QUERY_OR)
+    # print(documents)
+    for (i,v) in enumerate(documents):
+        documents[i] = v[0]
     documents_RSVd = {}
     for document in documents:
-        documents_RSVd[document] = compute_RSVd(str(document), query_list, n, l_avc)
+        documents_RSVd[document] = compute_RSVd(str(document), query_list,k1,b)
     sorted_RSVd = sorted(documents_RSVd.items(), key=lambda x: x[1], reverse=True)
+    print(str(len(sorted_RSVd)) + " documents were ranked.")
     print(sorted_RSVd)
 
 
@@ -263,6 +259,21 @@ def get_search_dict(query_list):
                 line = fo.readline()
             if has_term:
                 break
+    # print(search_dict)
+
+
+def get_tokens_number_dict():
+    global tokens_number
+    if os.path.isfile("tokens_number.json"):
+        fo = open("tokens_number.json", 'r')
+        tokens_number =json.load(fo)
+    else:
+        print("No tokens record! Creat it first!")
+        os._exit(0)
+    global n
+    global l_avc
+    n = len(tokens_number)
+    l_avc = compute_l_avc(n)
 
 
 def start_query():
@@ -273,6 +284,7 @@ def start_query():
         try:
             query_list, operator = deal_with_query(query)
             get_search_dict(query_list)
+            get_tokens_number_dict()
         except IndexError:
             print("Wrong query format! Input again!")
             start_query()
@@ -281,6 +293,8 @@ def start_query():
         query_list = check_exist(query_list)
         if operator == PARAMETER.QUERY_AND or operator == PARAMETER.QUERY_OR or operator == PARAMETER.QUERY_SINGLE:
             result = multiple_query(query_list, operator)
+            for (i, v) in enumerate(result):
+                result[i] = v[0]
             print(str(len(result)) + " documents were found." + "Total result: " + str(result))
             if operator == PARAMETER.QUERY_AND:
                 check_and_query(query_list, result)

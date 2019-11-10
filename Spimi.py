@@ -18,11 +18,24 @@ def spimi_invert(block_index):
     for (key, value) in deal_all_document.items():
         for term in value:
             if term not in block_dict:
-                index_list = [key]
+                index_list = [[key, 1]]
                 block_dict[term] = index_list
             else:
-                if key not in block_dict[term]:
-                    block_dict[term].append(key)
+                has_key = False
+                for doc in block_dict[term]:
+                    if doc[0] == key:
+                        doc[1] = doc[1] + 1
+                        has_key = True
+                if not has_key:
+                    block_dict[term].append([key, 1])
+                # if key not in block_dict[term][0]:
+                #     block_dict[term].append([key, 1])
+                # else:
+                #     for doc in block_dict[term]:
+                #         if doc[0] == key:
+                #             doc[1] = doc[1] + 1
+                #             break
+
         articles = articles + 1
         len_size_leave = len_size_leave - 1
 
@@ -74,8 +87,11 @@ def merge_spimi(block_index,merge_block):
             if all_line[0] == lowest_terms:
                 lowest_block_names.append(block_name)
                 write_down_posting = write_down_posting + all_line[1]
-        write_down_posting = list(map(int, write_down_posting))
-        write_down_posting.sort()
+        # write_down_posting = list(map(int, write_down_posting))
+        for list in write_down_posting:
+            list[0] = int(list[0])
+            list[1] = int(list[1])
+        write_down_posting.sort(key=(lambda x:x[0]))
 
         if final_file_line == PARAMETER.FINAL_TERMS_SIZE - 1:
             fo.write(write_down_line + str(write_down_posting))
