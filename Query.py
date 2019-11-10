@@ -208,31 +208,6 @@ def deal_with_query(query):
     return query_list, operator
 
 
-# def load_dict():
-#     """ Loading the index file into global variable """
-#     print("Loading ……")
-#     search_index = PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH
-#     global search_dict
-#     search_dict = OrderedDict()
-#     try:
-#         if not os.listdir(search_index):
-#             print("The index for dictionary is empty, please generate it first! ")
-#             os._exit(0)
-#     except FileNotFoundError:
-#         print("The index for dictionary is empty, please generate it first! ")
-#         os._exit(0)
-#
-#     for file in os.listdir(search_index):
-#         fo = open(search_index + file)
-#         line = fo.readline()
-#         while line:
-#             term, posting = line.rsplit(":", 1)
-#             search_dict[term] = ast.literal_eval(posting)
-#             line = fo.readline()
-#     print("Finish loading ! ")
-#     start_query()
-
-
 def get_search_dict(query_list):
     print("Getting ……")
     search_index = PARAMETER.STOP_WORDS_150_MERGE_BLOCK_PATH
