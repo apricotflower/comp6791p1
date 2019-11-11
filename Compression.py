@@ -106,11 +106,19 @@ def start_compress():
     Spimi.nonpositional_postings_num = 0
     stop_words_150_tokens = no_stop_words_150_sum
 
-    fo = open('tokens_number.json', 'w')
-    document_token_number = {}
+    # fo = open('tokens_number.json', 'w')
+    fo = open('tokens_number.txt', 'w')
+    i = 1
+    len_d = len(Deal_File.all_document.items())
+    # document_token_number = {}
     for (key,value) in Deal_File.all_document.items():
-        document_token_number[key] = len(value)
-    json.dump(document_token_number, fo)
+        # document_token_number[key] = len(value)
+        if len_d == i:
+            fo.write(key+":"+ str(len(value)))
+        else:
+            fo.write(key + ":" + str(len(value)) + "\n")
+        i = i + 1
+    # json.dump(document_token_number, fo)
 
     print("Drawing Table ……")
     table = prettytable.PrettyTable()

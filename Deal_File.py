@@ -30,15 +30,15 @@ def tokenize():
     for (key, value) in all_document.items():
         # # Deal with punctuation
         # value = value.translate(str.maketrans(string.punctuation, " " * len(string.punctuation)))
-        value =  re.sub(r'\W+', ' ', value)
+        # value =  re.sub(r'\W+', ' ', value)
         tokens = nltk.word_tokenize(value)
-        # tokens = [re.sub(r'[\W\s]', '', token) for token in tokens]
-        # empty_spaces = []
-        # for token in tokens:
-        #     if token == "":
-        #         empty_spaces.append(token)
-        # for e in empty_spaces:
-        #     tokens.remove(e)
+        tokens = [re.sub(r'[\W\s]', '', token) for token in tokens]
+        empty_spaces = []
+        for token in tokens:
+            if token == "":
+                empty_spaces.append(token)
+        for e in empty_spaces:
+            tokens.remove(e)
 
         all_document[key] = tokens
         tokens_num = tokens_num + len(tokens)

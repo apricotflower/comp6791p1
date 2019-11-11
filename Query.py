@@ -1,12 +1,9 @@
 import os
 import PARAMETER
 import ast
-from collections import OrderedDict
 import itertools
 import re
-import Deal_File
 import math
-import json
 import copy
 
 search_dict = dict()
@@ -19,7 +16,6 @@ def check_and_query(query_list, result):
         print("**" * 20)
         i = 1
         shorter_lists = list(itertools.combinations(query_list, len(query_list) - i))
-        # print(shorter_lists)
         while len(shorter_lists[0]) > 0:
             results = []
             for shorter_list in shorter_lists:
@@ -34,7 +30,6 @@ def check_and_query(query_list, result):
                     print("**"*10)
             i = i + 1
             shorter_lists = list(itertools.combinations(query_list, len(query_list) - i))
-            # print(shorter_lists)
 
 
 def doc_id_sorted(query_list, result):
@@ -73,8 +68,6 @@ def or_query_each(p1, p2):
         answer = answer + p2[p2_pointer:]
     elif p2_pointer == len(p2):
         answer = answer + p1[p1_pointer:]
-    # for (i,v) in enumerate(answer):
-    #     answer[i] = v[0]
     return answer
 
 
@@ -131,49 +124,51 @@ def multiple_query(query_list, operator):
 
 
 def compute_RSVd(document, query_list,k1,b):
-    l_d = int(tokens_number[document])
+    """ compute RSVd of one document """
+    l_d = int(find_tokens_number(document))
     temp = 0
     for t in query_list:
         tftd = 0
         for newid_pair in search_dict[t]:
-            # print(newid_pair[0])
-            # print(document)
             if str(newid_pair[0]) == str(document):
-                # print("in")
                 tftd = newid_pair[1]
         dft = len(search_dict[t])
 
         temp = temp+((math.log((n/dft), 10))*(((k1+1)*tftd)/(k1*((1-b)+b*(l_d/l_avc))+tftd)))
     RSVd = temp
-    # print("document " + str(document) + " RSVd is " + str(RSVd))
     return RSVd
 
 
 def compute_l_avc(n):
+    """ compute Lave """
     sum = 0
-    for token_number in tokens_number.values():
+    fo = open("tokens_number.txt", 'r')
+    line = fo.readline()
+    while line:
+        newid,token_number = line.split(":")
         sum = sum + int(token_number)
+        line = fo.readline()
     return sum/n
 
 
 def bm25_query(query_list):
-    # k1 = 1.2 #1.2
-    # b = 0.75 #0 to 1
+    """ bm25 query sort, recommend use k1 = 1.2(>0) and b = 0.75 (0=<b=<1) """
     print("Input k1: ")
     k1=float(input())
     print("Input b: ")
     b =float(input())
 
     documents = multiple_query(query_list, PARAMETER.QUERY_OR)
-    # print(documents)
-    for (i,v) in enumerate(documents):
-        documents[i] = v[0]
+    copy_doc = copy.deepcopy(documents)
+    for (i,v) in enumerate(copy_doc):
+        copy_doc[i] = v[0]
     documents_RSVd = {}
-    for document in documents:
-        documents_RSVd[document] = compute_RSVd(str(document), query_list,k1,b)
+    for d in copy_doc:
+        documents_RSVd[d] = compute_RSVd(str(d), query_list,k1,b)
     sorted_RSVd = sorted(documents_RSVd.items(), key=lambda x: x[1], reverse=True)
     print(str(len(sorted_RSVd)) + " documents were ranked.")
-    print(sorted_RSVd)
+    for doc in sorted_RSVd:
+        print("doc_id: " + str(doc[0]) + " rank_val: " + str(doc[1]))
 
 
 def deal_with_query(query):
@@ -237,18 +232,27 @@ def get_search_dict(query_list):
     # print(search_dict)
 
 
-def get_tokens_number_dict():
-    global tokens_number
-    if os.path.isfile("tokens_number.json"):
-        fo = open("tokens_number.json", 'r')
-        tokens_number =json.load(fo)
-    else:
-        print("No tokens record! Creat it first!")
-        os._exit(0)
+def prepare_bm25_para():
+    """ prepare n and l_avc for bm25 """
     global n
     global l_avc
-    n = len(tokens_number)
+    count = -1
+    for count,line in enumerate(open('tokens_number.txt')): pass
+    n = count+1
     l_avc = compute_l_avc(n)
+
+
+def find_tokens_number(find_newid):
+    """ find l_d """
+    answer = None
+    fo = open("tokens_number.txt", 'r')
+    line = fo.readline()
+    while line:
+        newid,token_number = line.split(":")
+        if str(newid) == str(find_newid):
+            answer = token_number
+        line = fo.readline()
+    return answer
 
 
 def start_query():
@@ -259,7 +263,7 @@ def start_query():
         try:
             query_list, operator = deal_with_query(query)
             get_search_dict(query_list)
-            get_tokens_number_dict()
+            prepare_bm25_para()
         except IndexError:
             print("Wrong query format! Input again!")
             start_query()

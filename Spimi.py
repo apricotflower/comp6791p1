@@ -28,13 +28,6 @@ def spimi_invert(block_index):
                         has_key = True
                 if not has_key:
                     block_dict[term].append([key, 1])
-                # if key not in block_dict[term][0]:
-                #     block_dict[term].append([key, 1])
-                # else:
-                #     for doc in block_dict[term]:
-                #         if doc[0] == key:
-                #             doc[1] = doc[1] + 1
-                #             break
 
         articles = articles + 1
         len_size_leave = len_size_leave - 1
